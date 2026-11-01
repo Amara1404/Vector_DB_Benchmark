@@ -1,4 +1,5 @@
-# vdb-bench: choosing a vector database for semantic product search
+# Vector DB benchmark
+### choosing a vector database for semantic product search
 
 ## Project details
 
@@ -185,9 +186,6 @@ flowchart LR
   CSV --> NB
 ```
 
-GitHub renders this diagram directly. For the PDF report, paste the block into
-[mermaid.live](https://mermaid.live) and export it as SVG or PNG.
-
 ## Repository layout
 
 ```
@@ -252,10 +250,9 @@ docker compose --profile bench run --rm bench make sift1m
 | README, architecture, setup | this file |
 | Reproducible pipeline | `Makefile`, `docker-compose.yml`, `configs/` |
 | Benchmark harness | `bench/` |
-| Results notebook | `notebooks/results.ipynb` → `results/results.pdf` |
+| Results notebook | `results/results.ipynb` → `results/results.pdf` |
 | Technical report (3–5 pages) | `docs/report.md` |
 | Data card | `docs/data_card.md` |
-| Selection guide | `docs/selection_guide.md` |
 | Demo video script (3 min) | `docs/demo_script.md` |
 
 ## Licences
