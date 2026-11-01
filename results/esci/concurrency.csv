@@ -1,0 +1,3 @@
+engine,kind,index,build_m,build_ef_construction,repeat,clients,qps,lat_p50_ms,lat_p99_ms
+faiss_hnsw,faiss,hnsw,16,128,0,8,4007.810420952447,1.8275000002176969,3.183189001465505
+qdrant_hnsw,qdrant,hnsw,16,128,0,8,664.735536074586,11.85059999806981,16.55584499927499

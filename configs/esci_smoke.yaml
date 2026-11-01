@@ -1,0 +1,36 @@
+# Smoke version of esci.yaml: 300k products (all judged products kept),
+# lexical hash embeddings from `esci_prep --embedder hash`. Checks the whole
+# pipeline in minutes on a laptop. Not for reporting.
+dataset:
+  name: esci
+  path: data/esci_smoke
+  n_queries: 1200        # 400 per locale
+
+k: 10
+k_eval: 100
+recall_target: 0.95
+holdout_frac: 0.01
+delete_frac: 0.01
+update_batch: 1000
+concurrency: []
+seed: 0
+
+x-hnsw-build: &hnsw_build {m: 16, ef_construction: 128}
+x-ef-sweep: &ef_sweep [{ef: 20}, {ef: 80}, {ef: 320}]
+
+engines:
+  - {name: faiss_hnsw, kind: faiss, index: hnsw, build: *hnsw_build, search_sweep: *ef_sweep}
+  - name: pgvector_hnsw
+    kind: pgvector
+    index: hnsw
+    build: {m: 16, ef_construction: 128, maintenance_work_mem: "${PG_MWM:-1GB}", parallel_workers: 2}
+    search_sweep: *ef_sweep
+    conn: {dsn: "${PG_DSN:-postgresql://bench:bench@localhost:5433/bench}", container: "${PG_CONTAINER:-}",
+           process: postgres, table: items_esci}
+  - name: qdrant_hnsw
+    kind: qdrant
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {host: "${QDRANT_HOST:-localhost}", port: 6333, grpc_port: 6334,
+           container: "${QDRANT_CONTAINER:-}", process: qdrant}

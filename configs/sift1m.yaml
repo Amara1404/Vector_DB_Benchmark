@@ -1,0 +1,57 @@
+# Systems benchmark: SIFT1M (1,000,000 x 128-d, L2), ANN-Benchmarks HDF5.
+# Fetch first:  bash scripts/download_ann.sh sift-128-euclidean
+dataset:
+  name: ann
+  path: data/ann/sift-128-euclidean.hdf5
+  n_queries: 1000
+
+k: 10                 # recall@10 is the headline metric
+k_eval: 100           # top-100 lists are also saved
+recall_target: 0.95   # operating point = fastest setting reaching this recall
+holdout_frac: 0.01    # 10k vectors held out of the build, inserted later (update cost)
+delete_frac: 0.01     # 10k vectors deleted after the inserts
+update_batch: 1000
+concurrency: [8]      # extra throughput run with 8 concurrent clients
+seed: 0
+
+# Same graph parameters for every HNSW engine (M=16, efConstruction=128),
+# so differences come from the engine, not the tuning.
+x-hnsw-build: &hnsw_build {m: 16, ef_construction: 128}
+x-ef-sweep: &ef_sweep [{ef: 10}, {ef: 20}, {ef: 40}, {ef: 80}, {ef: 160}, {ef: 320}]
+
+engines:
+  - name: faiss_hnsw
+    kind: faiss
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+
+  - name: faiss_ivf
+    kind: faiss
+    index: ivf
+    build: {nlist: 4096}
+    search_sweep: [{nprobe: 4}, {nprobe: 8}, {nprobe: 16}, {nprobe: 32}, {nprobe: 64}, {nprobe: 128}]
+
+  - name: pgvector_hnsw
+    kind: pgvector
+    index: hnsw
+    build: {m: 16, ef_construction: 128, maintenance_work_mem: "${PG_MWM:-4GB}", parallel_workers: 4}
+    search_sweep: *ef_sweep
+    conn: {dsn: "${PG_DSN:-postgresql://bench:bench@localhost:5433/bench}", container: "${PG_CONTAINER:-}",
+           process: postgres}
+
+  - name: qdrant_hnsw
+    kind: qdrant
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {host: "${QDRANT_HOST:-localhost}", port: 6333, grpc_port: 6334,
+           container: "${QDRANT_CONTAINER:-}", process: qdrant}
+
+  # Optional 4th engine: needs `docker compose --profile milvus up -d`
+  - name: milvus_hnsw
+    kind: milvus
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {uri: "${MILVUS_URI:-http://localhost:19530}", container: "${MILVUS_CONTAINER:-}"}

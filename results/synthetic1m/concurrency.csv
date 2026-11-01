@@ -1,0 +1,5 @@
+engine,kind,index,build_m,build_ef_construction,clients,qps,lat_p50_ms,lat_p99_ms,build_nlist,build_maintenance_work_mem,build_parallel_workers
+faiss_hnsw,faiss,hnsw,16.0,128.0,4,5817.836251408347,0.460464000070715,3.62777922997793,,,
+faiss_ivf,faiss,ivf,,,4,4761.563947291284,0.21837550002601347,13.040089440160015,2048.0,,
+pgvector_hnsw,pgvector,hnsw,16.0,128.0,4,1057.904102840421,3.256135000128779,12.97136214027432,,2GB,2.0
+qdrant_hnsw,qdrant,hnsw,16.0,128.0,4,1478.7528166806705,2.4202265001349588,7.1484941600874645,,,

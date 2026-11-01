@@ -1,0 +1,34 @@
+# Scale check: 1M synthetic vectors on the harness's own machine (SIFT1M is the reported run).
+# Synthetic clustered vectors with a skewed locale mix (67/19/14%) so the
+# filtered-search path runs too. Not for reporting.
+dataset: {name: synthetic, n: 1000000, dim: 128, n_queries: 1000}
+k: 10
+k_eval: 100
+recall_target: 0.95
+holdout_frac: 0.01
+delete_frac: 0.01
+update_batch: 1000
+concurrency: [4]
+seed: 0
+
+x-hnsw-build: &hnsw_build {m: 16, ef_construction: 128}
+x-ef-sweep: &ef_sweep [{ef: 10}, {ef: 20}, {ef: 40}, {ef: 80}, {ef: 160}]
+
+engines:
+  - {name: faiss_hnsw, kind: faiss, index: hnsw, build: *hnsw_build, search_sweep: *ef_sweep}
+  - {name: faiss_ivf, kind: faiss, index: ivf, build: {nlist: 2048},
+     search_sweep: [{nprobe: 4}, {nprobe: 16}, {nprobe: 64}]}
+  - name: pgvector_hnsw
+    kind: pgvector
+    index: hnsw
+    build: {m: 16, ef_construction: 128, maintenance_work_mem: "2GB", parallel_workers: 2}
+    search_sweep: *ef_sweep
+    conn: {dsn: "${PG_DSN:-postgresql://bench:bench@localhost:5433/bench}", container: "${PG_CONTAINER:-}",
+           process: postgres}
+  - name: qdrant_hnsw
+    kind: qdrant
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {host: "${QDRANT_HOST:-localhost}", port: 6333, grpc_port: 6334,
+           container: "${QDRANT_CONTAINER:-}", process: qdrant}

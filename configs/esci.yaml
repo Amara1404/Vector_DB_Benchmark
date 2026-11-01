@@ -1,0 +1,58 @@
+# Responsible-AI + realism benchmark: Amazon ESCI, full catalogue.
+# 1,814,924 products (US 1.22M, JP 339k, ES 260k), multilingual-e5-small (384-d).
+# Prepare first:
+#   python -m bench.esci_prep --src data/esci --out data/esci_emb \
+#          --embedder st:intfloat/multilingual-e5-small --device cuda
+dataset:
+  name: esci
+  path: data/esci_emb
+  n_queries: 3000        # 1,000 per locale (equal sizes -> comparable confidence intervals)
+
+k: 10
+k_eval: 100
+recall_target: 0.95
+holdout_frac: 0.01
+delete_frac: 0.01
+update_batch: 1000
+concurrency: [8]
+seed: 0
+
+x-hnsw-build: &hnsw_build {m: 16, ef_construction: 128}
+x-ef-sweep: &ef_sweep [{ef: 20}, {ef: 40}, {ef: 80}, {ef: 160}, {ef: 320}]
+
+engines:
+  - {name: faiss_hnsw, kind: faiss, index: hnsw, build: *hnsw_build, search_sweep: *ef_sweep}
+
+  # pgvector as most teams deploy it: WHERE locale = ... over the HNSW scan
+  - name: pgvector_hnsw
+    kind: pgvector
+    index: hnsw
+    build: {m: 16, ef_construction: 128, maintenance_work_mem: "${PG_MWM:-4GB}", parallel_workers: 4}
+    search_sweep: *ef_sweep
+    conn: {dsn: "${PG_DSN:-postgresql://bench:bench@localhost:5433/bench}", container: "${PG_CONTAINER:-}",
+           process: postgres, table: items_esci}
+
+  # pgvector >= 0.8 iterative index scans: keeps scanning until LIMIT is filled
+  - name: pgvector_hnsw_iter
+    kind: pgvector
+    index: hnsw
+    build: {m: 16, ef_construction: 128, maintenance_work_mem: "${PG_MWM:-4GB}", parallel_workers: 4,
+            iterative_scan: relaxed_order}
+    search_sweep: *ef_sweep
+    conn: {dsn: "${PG_DSN:-postgresql://bench:bench@localhost:5433/bench}", container: "${PG_CONTAINER:-}",
+           process: postgres, table: items_esci_iter}
+
+  - name: qdrant_hnsw
+    kind: qdrant
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {host: "${QDRANT_HOST:-localhost}", port: 6333, grpc_port: 6334,
+           container: "${QDRANT_CONTAINER:-}", process: qdrant}
+
+  - name: milvus_hnsw
+    kind: milvus
+    index: hnsw
+    build: *hnsw_build
+    search_sweep: *ef_sweep
+    conn: {uri: "${MILVUS_URI:-http://localhost:19530}", container: "${MILVUS_CONTAINER:-}"}

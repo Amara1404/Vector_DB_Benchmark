@@ -1,0 +1,33 @@
+data/
+results/*/ids/
+results/*.log
+*.db
+__pycache__/
+*.pyc
+.venv/
+.env
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+.claude/
+PROJECT_NOTES.txt
+docs/
+notebooks/
+# Heavy archives that land in the repo root during Colab round-trips etc.
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Secrets / credentials — never commit these even if one shows up locally
+*.pem
+*.key
+*credentials*.json
+*secrets*
+.env.*
+!.env.example
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

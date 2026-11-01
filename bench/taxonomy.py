@@ -1,0 +1,78 @@
+"""Department taxonomy used to derive product categories for ESCI.
+
+ESCI ships no category column, so categories are assigned zero-shot: each
+product goes to the department whose prototype embedding is most similar.
+Every department has a description in all three catalogue languages, and the
+prototype is the mean of the three, so the category step itself is not tilted
+toward English products. Agreement with a hand-labelled sample is reported in
+the data card (see docs/data_card.md, "Category labels").
+"""
+
+DEPARTMENTS = [
+    ("electronics",
+     "consumer electronics: headphones, chargers, cables, phones, cameras, speakers, TVs",
+     "electrónica: auriculares, cargadores, cables, móviles, cámaras, altavoces, televisores",
+     "家電・電子機器：イヤホン、充電器、ケーブル、スマートフォン、カメラ、スピーカー、テレビ"),
+    ("computers",
+     "computers and accessories: laptops, keyboards, mice, monitors, storage drives, printers",
+     "informática: portátiles, teclados, ratones, monitores, discos duros, impresoras",
+     "パソコン・周辺機器：ノートパソコン、キーボード、マウス、モニター、ストレージ、プリンター"),
+    ("home_kitchen",
+     "home and kitchen: cookware, kitchen utensils, bedding, furniture, home decor, storage",
+     "hogar y cocina: utensilios de cocina, sartenes, ropa de cama, muebles, decoración",
+     "ホーム・キッチン：調理器具、キッチン用品、寝具、家具、インテリア、収納"),
+    ("tools_home_improvement",
+     "tools and home improvement: power tools, hardware, lighting fixtures, plumbing, paint",
+     "bricolaje y herramientas: herramientas eléctricas, ferretería, iluminación, fontanería",
+     "DIY・工具：電動工具、金物、照明器具、配管、塗料"),
+    ("clothing_shoes_jewelry",
+     "clothing, shoes and jewelry: shirts, dresses, pants, sneakers, watches, necklaces",
+     "ropa, zapatos y joyería: camisetas, vestidos, pantalones, zapatillas, relojes, collares",
+     "ファッション：シャツ、ワンピース、パンツ、スニーカー、腕時計、ネックレス"),
+    ("beauty_personal_care",
+     "beauty and personal care: skincare, makeup, hair care, shaving, fragrance",
+     "belleza y cuidado personal: cuidado de la piel, maquillaje, cabello, afeitado, perfume",
+     "ビューティー：スキンケア、メイク、ヘアケア、シェーバー、香水"),
+    ("health_household",
+     "health and household: vitamins, supplements, medical supplies, cleaning products, batteries",
+     "salud y hogar: vitaminas, suplementos, material médico, productos de limpieza, pilas",
+     "ヘルス・日用品：ビタミン、サプリメント、医療用品、掃除用品、電池"),
+    ("grocery",
+     "grocery and gourmet food: snacks, coffee, tea, beverages, spices, candy",
+     "alimentación: aperitivos, café, té, bebidas, especias, dulces",
+     "食品・飲料：お菓子、コーヒー、お茶、飲み物、調味料、キャンディ"),
+    ("toys_games",
+     "toys and games: board games, puzzles, dolls, action figures, building blocks, kids toys",
+     "juguetes y juegos: juegos de mesa, puzles, muñecas, figuras, bloques de construcción",
+     "おもちゃ・ゲーム：ボードゲーム、パズル、人形、フィギュア、ブロック"),
+    ("sports_outdoors",
+     "sports and outdoors: fitness equipment, camping gear, bicycles, yoga mats, fishing",
+     "deportes y aire libre: fitness, acampada, bicicletas, esterillas de yoga, pesca",
+     "スポーツ・アウトドア：フィットネス用品、キャンプ用品、自転車、ヨガマット、釣り"),
+    ("automotive",
+     "automotive: car parts, car accessories, motorcycle parts, tires, car care",
+     "coche y moto: recambios, accesorios para coche, piezas de moto, neumáticos",
+     "車・バイク：カー用品、車のパーツ、バイク用品、タイヤ、洗車用品"),
+    ("pet_supplies",
+     "pet supplies: dog food, cat litter, pet toys, aquarium, leashes",
+     "productos para mascotas: comida para perros, arena para gatos, juguetes, acuarios",
+     "ペット用品：ドッグフード、猫砂、ペットのおもちゃ、水槽、リード"),
+    ("office_school",
+     "office and school supplies: pens, notebooks, paper, desk organizers, backpacks",
+     "oficina y papelería: bolígrafos, cuadernos, papel, organizadores, mochilas escolares",
+     "文房具・オフィス用品：ペン、ノート、用紙、デスク収納、通学リュック"),
+    ("books_media",
+     "books, music, movies and video games: novels, textbooks, DVDs, game consoles",
+     "libros, música, películas y videojuegos: novelas, libros de texto, DVD, consolas",
+     "本・音楽・映画・ゲーム：小説、参考書、DVD、ゲーム機"),
+    ("baby",
+     "baby products: diapers, strollers, baby bottles, car seats, nursery",
+     "bebé: pañales, carritos, biberones, sillas de coche, habitación del bebé",
+     "ベビー用品：おむつ、ベビーカー、哺乳瓶、チャイルドシート"),
+    ("garden_patio",
+     "garden and patio: plants, seeds, garden tools, outdoor furniture, grills",
+     "jardín: plantas, semillas, herramientas de jardín, muebles de exterior, barbacoas",
+     "ガーデン：植物、種、園芸用品、屋外家具、バーベキューグリル"),
+]
+
+NAMES = [d[0] for d in DEPARTMENTS]

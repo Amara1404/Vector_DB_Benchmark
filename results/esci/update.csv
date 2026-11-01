@@ -1,0 +1,3 @@
+engine,kind,index,build_m,build_ef_construction,param,recall_before,n_insert,insert_s,insert_vps,insert_to_searchable_s,recall_after_insert,n_delete,delete_s,delete_vps,delete_native,recall_after_delete,deleted_returned_rate,note,repeat
+faiss_hnsw,faiss,hnsw,16,128,ef=320,0.9027,18149,3.850064100002783,4713.947489857866,3.850070200001937,0.9021333333333332,18149,0.0649497999984305,279431.191480783,False,0.9019666666666668,0.0,no native delete: tombstone filter; reclaiming space needs a full rebuild,0
+qdrant_hnsw,qdrant,hnsw,16,128,ef=320,0.9481666666666667,18149,1.1536059999998542,15732.407771806225,11.648002500001894,0.9485666666666668,18149,0.18138249999901745,100059.26701913532,True,0.9480666666666666,0.0,,0

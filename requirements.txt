@@ -1,0 +1,18 @@
+# Versions the harness was tested with (see results/*/env.json for each run)
+numpy==2.5.3
+pandas==3.0.5
+pyarrow==26.0.0
+h5py==3.16.0
+PyYAML==6.0.3
+psutil==7.2.2
+scikit-learn==1.9.1
+faiss-cpu==1.15.1
+psycopg[binary]==3.3.6
+pgvector==0.5.1
+qdrant-client==1.20.0
+pymilvus==3.0.2
+milvus-lite==3.2.2
+matplotlib==3.11.2
+nbformat==5.11.1
+nbconvert==7.17.2
+ipykernel==7.4.0

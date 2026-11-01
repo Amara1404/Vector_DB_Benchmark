@@ -1,0 +1,109 @@
+# Reproducible stack for vdb-bench.
+#
+#   docker compose up -d postgres qdrant              # core engines
+#   docker compose --profile milvus up -d             # + Milvus standalone (etcd + MinIO)
+#   docker compose run --rm bench make sift1m         # run inside the bench container
+#
+# Every database gets the same CPU and memory budget (set in .env) so engines
+# are compared on equal hardware. FAISS runs inside the `bench` container,
+# which gets the same budget.
+x-limits: &limits
+  cpus: "${ENGINE_CPUS:-4}"
+  mem_limit: "${ENGINE_MEM:-16g}"
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg17
+    container_name: vdb-postgres
+    <<: *limits
+    shm_size: 4g
+    environment:
+      POSTGRES_USER: bench
+      POSTGRES_PASSWORD: bench
+      POSTGRES_DB: bench
+    command: >
+      postgres -c shared_buffers=${PG_SHARED_BUFFERS:-4GB}
+               -c maintenance_work_mem=${PG_MWM:-4GB}
+               -c max_parallel_maintenance_workers=4
+               -c max_parallel_workers=8
+               -c effective_cache_size=8GB
+               -c shared_preload_libraries=pg_prewarm
+    ports: ["${PG_HOST_PORT:-5433}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bench"]
+      interval: 5s
+      retries: 20
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    container_name: vdb-qdrant
+    <<: *limits
+    environment:
+      QDRANT__TELEMETRY_DISABLED: "true"
+    ports: ["6333:6333", "6334:6334"]
+    volumes: [qdrant:/qdrant/storage]
+
+  # ---- Milvus standalone (optional 4th engine) ----------------------------
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.18
+    profiles: [milvus]
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir /etcd
+    volumes: [etcd:/etcd]
+
+  minio:
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    profiles: [milvus]
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data
+    volumes: [minio:/minio_data]
+
+  milvus:
+    image: milvusdb/milvus:v2.5.14
+    container_name: vdb-milvus
+    profiles: [milvus]
+    <<: *limits
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_REGION: us-east-1
+    ports: ["19530:19530", "9091:9091"]
+    depends_on: [etcd, minio]
+    volumes: [milvus:/var/lib/milvus]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+
+  # ---- harness ----------------------------------------------------------
+  bench:
+    build: .
+    <<: *limits
+    profiles: [bench]
+    working_dir: /app
+    environment:
+      PG_DSN: postgresql://bench:bench@postgres:5432/bench
+      QDRANT_HOST: qdrant
+      MILVUS_URI: http://milvus:19530
+      PG_CONTAINER: vdb-postgres
+      QDRANT_CONTAINER: vdb-qdrant
+      MILVUS_CONTAINER: vdb-milvus
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./configs:/app/configs
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # memory sampling via docker stats
+    depends_on:
+      postgres: {condition: service_healthy}
+      qdrant: {condition: service_started}
+
+volumes: {pgdata: {}, qdrant: {}, etcd: {}, minio: {}, milvus: {}}

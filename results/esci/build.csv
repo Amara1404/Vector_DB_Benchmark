@@ -1,0 +1,3 @@
+engine,kind,index,build_m,build_ef_construction,repeat,n,dim,build_total_s,train_s,load_s,index_s,index_mb,rss_delta_mb,rss_peak_delta_mb,rss_after_mb,bytes_per_vector,in_process
+faiss_hnsw,faiss,hnsw,16,128,0,1796775,384,80.73335450000013,0.0001379999994242,0.0,79.528868100002,2892.9283323287964,5891.71875,8295.21875,6325.09765625,1688.2777303780383,True
+qdrant_hnsw,qdrant,hnsw,16,128,0,1796775,384,370.9484298999996,,84.77404669999669,284.69205200000215,,,,,,False

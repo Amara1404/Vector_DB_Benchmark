@@ -1,0 +1,3 @@
+# Only needed for `bench.esci_prep` with a neural embedder (needs PyTorch).
+# On a GPU machine (Colab, Kaggle) install the CUDA build of torch first.
+sentence-transformers>=3.0
